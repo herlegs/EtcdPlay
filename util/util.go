@@ -1,6 +1,12 @@
 package util
 
-import "fmt"
+import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"go.etcd.io/etcd/clientv3"
+	"strings"
+)
 
 func Parse(memberID uint64) string {
 	hexID := fmt.Sprintf("%x", memberID)
@@ -13,4 +19,31 @@ func Parse(memberID uint64) string {
 		return parsed
 	}
 	return "unknown"
+}
+
+
+func PrintObject(o interface{}, bytesArr ...[]byte) string {
+	b, err := json.MarshalIndent(o, "|", "\t")
+	jsonStr := ""
+	if err != nil {
+		return fmt.Sprintf("[PrintObject Error:%v]", err)
+
+	}
+	jsonStr = string(b)
+
+	for _, bytes := range bytesArr {
+		b64Str := base64.StdEncoding.EncodeToString(bytes)
+		jsonStr = strings.Replace(jsonStr, b64Str, string(bytes), -1)
+	}
+
+	return jsonStr
+}
+
+func PrintGetResponse(response *clientv3.GetResponse) string {
+	var bytesArr [][]byte
+	for _, kv := range response.Kvs {
+		bytesArr = append(bytesArr, kv.Key)
+		bytesArr = append(bytesArr, kv.Value)
+	}
+	return PrintObject(response, bytesArr...)
 }
