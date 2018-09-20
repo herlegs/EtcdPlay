@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/herlegs/EtcdPlay/constant"
 	"github.com/herlegs/EtcdPlay/util"
-	"time"
 	"go.etcd.io/etcd/clientv3"
+	"time"
 )
 
 func main() {
@@ -23,11 +23,20 @@ func main() {
 	}
 	defer client.Close()
 
-	resp, err := client.Get(context.Background(), "test")
+	channel := client.Watch(context.Background(), "test")
 	if err != nil {
 		fmt.Printf("error get: %v\n",err)
-	} else {
-		fmt.Printf("res:%v\n",util.PrintGetResponse(resp))
+	}
+
+	for {
+		select {
+			case resp,ok := <- channel:
+				if !ok {
+					fmt.Printf("channel closed\n",)
+					return
+				}
+				fmt.Printf("watch event:%v\n",util.PrintWatchResponse(resp))
+		}
 	}
 
 

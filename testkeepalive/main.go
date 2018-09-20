@@ -41,7 +41,7 @@ func main()  {
 		select {
 			case resp,ok := <-ch:
 				if ok {
-					fmt.Printf("member[%s] lease[%x] ttl[%v] timeNow[%v]\n",util.Parse(resp.MemberId), resp.ID, resp.TTL, time.Now().String())
+					fmt.Printf("member[%s] lease[%x] ttl[%v] timeNow[%v]\n",util.GetHostFromMemberUint64ID(resp.MemberId), resp.ID, resp.TTL, time.Now().String())
 				} else {
 					fmt.Printf("channel closed[%v]\n",time.Now().String())
 					return

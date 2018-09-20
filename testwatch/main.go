@@ -40,7 +40,7 @@ func main() {
 			case resp, ok := <- watchCh:
 				if ok {
 					for _, event := range resp.Events {
-						fmt.Printf("Event received[%s]! %s executed on %q with value %q\n",util.Parse(resp.Header.MemberId), event.Type, event.Kv.Key, event.Kv.Value)
+						fmt.Printf("Event received[%s]! %s executed on %q with value %q\n",util.GetHostFromMemberUint64ID(resp.Header.MemberId), event.Type, event.Kv.Key, event.Kv.Value)
 					}
 				} else {
 					fmt.Printf("channel closed\n",)

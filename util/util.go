@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Parse(memberID uint64) string {
+func GetHostFromMemberUint64ID(memberID uint64) string {
 	hexID := fmt.Sprintf("%x", memberID)
 	nameMap := map[string]string{
 		"8211f1d0f64f3269": "etcd1",
@@ -19,6 +19,18 @@ func Parse(memberID uint64) string {
 		return parsed
 	}
 	return "unknown"
+}
+
+func DecodeHostNameFromMemberStrID(str string) string {
+	nameMap := map[string]string{
+		"9372538179322589801":"etcd1",
+		"10501334649042878790":"etcd2",
+		"18249187646912138824":"etcd3",
+	}
+	for key, value := range nameMap {
+		str = strings.Replace(str, key, value, -1)
+	}
+	return str
 }
 
 
@@ -45,5 +57,23 @@ func PrintGetResponse(response *clientv3.GetResponse) string {
 		bytesArr = append(bytesArr, kv.Key)
 		bytesArr = append(bytesArr, kv.Value)
 	}
-	return PrintObject(response, bytesArr...)
+	return DecodeHostNameFromMemberStrID(PrintObject(response, bytesArr...))
+}
+
+func PrintWatchResponse(response clientv3.WatchResponse) string {
+	var bytesArr [][]byte
+	for _, event := range response.Events {
+		event.Type += 1000
+		bytesArr = append(bytesArr, event.Kv.Key)
+		bytesArr = append(bytesArr, event.Kv.Value)
+		if event.PrevKv != nil {
+			bytesArr = append(bytesArr, event.PrevKv.Key)
+			bytesArr = append(bytesArr, event.PrevKv.Value)
+		}
+	}
+
+	jsonStr := PrintObject(response, bytesArr...)
+	jsonStr = strings.Replace(jsonStr, `"type": 1000`, `"type": "PUT"`, -1)
+	jsonStr = strings.Replace(jsonStr, `"type": 1001`, `"type": "DELETE"`, -1)
+	return DecodeHostNameFromMemberStrID(jsonStr)
 }
