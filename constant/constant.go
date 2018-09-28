@@ -7,5 +7,5 @@ const(
 )
 
 var (
-	Cluster = [...]string{Host1, Host2, Host3}
+	Cluster = []string{Host1, Host2, Host3}
 )
