@@ -52,9 +52,11 @@ func GetAliasMap(logs dto.CombinedLogs, aliasSource []string) map[string]string 
 
 func SaveLogsToFile(filename string, logs []*dto.KibanaLogEntry, aliasMap map[string]string) {
 	fileContent := ""
-	for _, log := range logs {
+	for i, log := range logs {
 		fileContent += replaceWithAlias(log.FormatString(""), aliasMap) + "\n"
-
+		if i > 0 && log.TimestampStr != logs[i-1].TimestampStr {
+			fileContent += "\n"
+		}
 	}
 	logutil.WriteFile(filename, fileContent)
 }
