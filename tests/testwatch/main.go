@@ -3,22 +3,24 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/herlegs/EtcdPlay/constant"
 	"github.com/herlegs/EtcdPlay/util"
 	"go.etcd.io/etcd/clientv3"
-	"time"
 )
 
 func main() {
-	etcdHost := "127.0.0.1:2379"
+	etcdHost := constant.Host1
 	etcdWatchKey := "test"
 
 	client, err := clientv3.New(clientv3.Config{
-		Endpoints: []string{"http://" + etcdHost, /*"http://127.0.0.1:22379"*/},
+		Endpoints:   []string{etcdHost},
 		DialTimeout: time.Second * 5,
 	})
 
 	if err != nil {
-		fmt.Printf("error init client: %v\n",err)
+		fmt.Printf("error init client: %v\n", err)
 		return
 	}
 	defer client.Close()
@@ -37,16 +39,15 @@ func main() {
 
 	for {
 		select {
-			case resp, ok := <- watchCh:
-				if ok {
-					for _, event := range resp.Events {
-						fmt.Printf("Event received[%s]! %s executed on %q with value %q\n",util.GetHostFromMemberUint64ID(resp.Header.MemberId), event.Type, event.Kv.Key, event.Kv.Value)
-					}
-				} else {
-					fmt.Printf("channel closed\n",)
-					return
+		case resp, ok := <-watchCh:
+			if ok {
+				for _, event := range resp.Events {
+					fmt.Printf("Event received[%s]! %s executed on %q with value %q\n", util.GetHostFromMemberUint64ID(resp.Header.MemberId), event.Type, event.Kv.Key, event.Kv.Value)
 				}
+			} else {
+				fmt.Printf("channel closed\n")
+				return
+			}
 		}
 	}
 }
-
